@@ -17,6 +17,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          # 暂时关闭缓存以避免报错
+          # cache: 'pnpm' 
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
@@ -25,11 +27,6 @@ jobs:
         run: pnpm run build
         env:
           NEXT_PUBLIC_SERVICE_MODE: server
-          # 核心：这两行会命令 Next.js 无视你刚才看到的那些红字报错
-          NEXTJS_IGNORE_TYPE_CHECKS: true
-          NEXTJS_IGNORE_ESLINT: true
-          # 给够内存，防止构建中途崩溃
-          NODE_OPTIONS: "--max-old-space-size=4096"
 
       - name: Prepare Artifact
         run: |
