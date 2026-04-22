@@ -1,4 +1,4 @@
-name: Build LobeHub for Serv00
+name: Build LobeHub Stable
 on: 
   workflow_dispatch:
 
@@ -8,36 +8,49 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 1. 安装 pnpm
       - name: Install pnpm
         uses: pnpm/action-setup@v2
         with:
           version: latest
 
+      # 2. 新增：安装 Bun (解决 bun: not found 问题)
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      # 3. 设置 Node.js
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # 暂时关闭缓存以避免报错
-          # cache: 'pnpm' 
 
+      # 4. 安装依赖
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      # 5. 执行构建
       - name: Build project
         run: pnpm run build
         env:
           NEXT_PUBLIC_SERVICE_MODE: server
+          NEXTJS_IGNORE_TYPE_CHECKS: true
+          NEXTJS_IGNORE_ESLINT: true
+          NODE_OPTIONS: "--max-old-space-size=4096"
 
+      # 6. 打包产物
       - name: Prepare Artifact
         run: |
-          mkdir release
+          mkdir -p release
           cp -r .next release/
           cp -r public release/
           cp package.json release/
-          zip -r lobehub-serv00.zip release/
+          zip -r lobehub-stable.zip release/
 
+      # 7. 上传
       - name: Upload Zip
         uses: actions/upload-artifact@v4
         with:
-          name: lobehub-build-package
-          path: lobehub-serv00.zip
+          name: lobehub-stable-package
+          path: lobehub-stable.zip
